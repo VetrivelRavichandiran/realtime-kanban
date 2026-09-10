@@ -1,0 +1,166 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "sqlite"
+  url = env("DATABASE_URL")
+}
+model User {
+ 
+  id String @id @default(cuid())
+  email String @unique
+  name String
+  password String
+  createdAt DateTime @default(now())
+  memberships Membership[]
+  activities Activity[]
+  attachments Attachment[]
+  comments Comment[]
+  notifications Notification[]
+  assignments CardAssignee[]
+}
+model Board {
+ 
+  id String @id @default(cuid())
+  name String
+  color String @default("#0f766e")
+  archived Boolean @default(false)
+  createdAt DateTime @default(now())
+  lists List[]
+  memberships Membership[]
+  activities Activity[]
+  labels Label[]
+  notifications Notification[]
+}
+model Membership {
+ 
+  id String @id @default(cuid())
+  userId String
+ 
+  boardId String
+  role String @default("member")
+  user User @relation(fields:[userId],references:[id])
+  board Board @relation(fields:[boardId],references:[id])
+  @@unique([userId,boardId])
+}
+model List {
+ 
+  id String @id @default(cuid())
+ 
+  boardId String
+  name String
+  position Int
+  board Board @relation(fields:[boardId],references:[id])
+  cards Card[]
+  @@index([boardId,position])
+}
+model Card {
+ 
+  id String @id @default(cuid())
+  listId String
+  title String
+  description String?
+  position Int
+  dueDate DateTime?
+  priority String @default("none")
+  color String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  list List @relation(fields:[listId],references:[id])
+  labels CardLabel[]
+  checklist ChecklistItem[]
+  attachments Attachment[]
+  comments Comment[]
+  assignees CardAssignee[]
+  @@index([listId,position])
+}
+model Label {
+ 
+  id String @id @default(cuid())
+ 
+  boardId String
+  name String
+  color String
+  board Board @relation(fields:[boardId],references:[id])
+  cards CardLabel[]
+}
+model CardLabel {
+ 
+  id String @id @default(cuid())
+  cardId String
+  labelId String
+  card Card @relation(fields:[cardId],references:[id],onDelete:Cascade)
+  label Label @relation(fields:[labelId],references:[id],onDelete:Cascade)
+  @@unique([cardId,labelId])
+}
+model CardAssignee {
+ 
+  id String @id @default(cuid())
+  cardId String
+  userId String
+  card Card @relation(fields:[cardId],references:[id],onDelete:Cascade)
+  user User @relation(fields:[userId],references:[id])
+  @@unique([cardId,userId])
+}
+model ChecklistItem {
+ 
+  id String @id @default(cuid())
+  cardId String
+  content String
+  done Boolean @default(false)
+  position Int
+  createdAt DateTime @default(now())
+  card Card @relation(fields:[cardId],references:[id],onDelete:Cascade)
+}
+model Attachment {
+ 
+  id String @id @default(cuid())
+  cardId String
+  fileName String
+  storedName String
+  mimeType String
+  size Int
+  uploadedById String
+  createdAt DateTime @default(now())
+  card Card @relation(fields:[cardId],references:[id],onDelete:Cascade)
+  uploadedBy User @relation(fields:[uploadedById],references:[id])
+  @@index([cardId])
+}
+model Comment {
+ 
+  id String @id @default(cuid())
+  cardId String
+  authorId String
+  body String
+  createdAt DateTime @default(now())
+  card Card @relation(fields:[cardId],references:[id],onDelete:Cascade)
+  author User @relation(fields:[authorId],references:[id])
+  @@index([cardId])
+}
+model Notification {
+ 
+  id String @id @default(cuid())
+  userId String
+  type String
+  message String
+  cardId String?
+ 
+  boardId String?
+  read Boolean @default(false)
+  createdAt DateTime @default(now())
+  user User @relation(fields:[userId],references:[id])
+  board Board? @relation(fields:[boardId],references:[id])
+  @@index([userId,read])
+}
+model Activity {
+ 
+  id String @id @default(cuid())
+ 
+  boardId String
+  actorId String
+  message String
+  createdAt DateTime @default(now())
+  board Board @relation(fields:[boardId],references:[id])
+  actor User @relation(fields:[actorId],references:[id])
+  @@index([boardId,createdAt])
+}
