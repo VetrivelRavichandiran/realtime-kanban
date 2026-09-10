@@ -1,0 +1,22 @@
+node_modules
+.next
+dist
+.DS_Store
+*.log
+
+# databases
+*.db
+*.db-journal
+apps/api/prisma/dev.db
+
+# uploads (keep the placeholder + gitkeep)
+apps/api/uploads/*
+!apps/api/uploads/.gitkeep
+!apps/api/uploads/seed-placeholder.txt
+
+# env — ignore real env files but keep the .example templates
+.env
+.env.*
+!.env.example
+!apps/api/.env.example
+!apps/web/.env.example

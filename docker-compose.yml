@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:16
+    container_name: kanban_db
+    environment:
+      POSTGRES_USER: kanban
+      POSTGRES_PASSWORD: kanban
+      POSTGRES_DB: kanban
+    ports:
+      - "5432:5432"
+    volumes:
+      - kanban_pg:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: kanban_api
+    env_file:
+      - apps/api/.env
+    ports:
+      - "4000:4000"
+    depends_on:
+      - db
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: kanban_web
+    env_file:
+      - apps/web/.env
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+volumes:
+  kanban_pg:
